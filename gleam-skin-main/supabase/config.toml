@@ -1,0 +1,7 @@
+project_id = "nnwooxeybidkjuqyiamx"
+
+[functions.survey-chat]
+verify_jwt = false
+
+[functions.analyze-survey]
+verify_jwt = false
