@@ -107,19 +107,17 @@ JSON:"""
         response = client.chat_completion(
             messages=messages,
             model="meta-llama/Llama-3.2-3B-Instruct",
-            max_tokens=2500,  # Increased token limit for larger surveys
+            max_tokens=2500,
             temperature=0.7
         )
         
         response_text = response.choices[0].message.content
         
         # Try to parse JSON from the response
-        # Find JSON in the response (it might be wrapped in markdown code blocks)
         json_match = re.search(r'```json\s*(.*?)\s*```', response_text, re.DOTALL)
         if json_match:
             json_str = json_match.group(1)
         else:
-            # Try to find JSON object directly
             json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
             if json_match:
                 json_str = json_match.group(0)
@@ -128,28 +126,109 @@ JSON:"""
         
         result = json.loads(json_str)
         
-        # Validate the structure
         if 'title' not in result or 'questions' not in result:
             raise ValueError("Invalid response structure")
         
         return result
         
     except Exception as e:
-        print(f"AI Generation Error: {str(e)}") # Log the error for debugging
-        # Fallback: return a simple structure but include the error in the title to alert the user
+        print(f"AI Generation Error: {str(e)}")
         return {
-            "title": "Generated Survey (Fallback - Error Occurred)",
-            "questions": [
-                {
-                    "text": "We encountered an error generating your specific questions. Please try again.",
-                    "type": "text",
-                    "required": True
-                },
-                {
-                    "text": f"Error details: {str(e)}",
-                    "type": "text",
-                    "required": False
-                }
-            ],
+            "title": "Generated Survey (Error)",
+            "questions": [],
             "error": str(e)
+        }
+
+def detect_duplicate_questions(questions: list, api_key: str = None):
+    """
+    Detect duplicate/redundant questions using AI semantic similarity
+    
+    Args:
+        questions: List of question dicts [{"text": "...", "type": "...", "options": [...]}]
+        api_key: Hugging Face API key
+    
+    Returns:
+        {
+            "duplicates": [[idx1, idx2], ...],
+            "suggestions": [...],
+            "total_duplicates": int
+        }
+    """
+    if not api_key:
+        api_key = os.getenv('HUGGINGFACE_API_KEY')
+    
+    if not api_key:
+        raise ValueError("Hugging Face API key not provided")
+    
+    client = InferenceClient(token=api_key)
+    
+    try:
+        question_texts = [q.get('text', '') for q in questions]
+        
+        prompt = f"""Analyze these survey questions and identify which ones are asking essentially the same thing (duplicates/redundant).
+
+Questions:
+{chr(10).join([f"{i+1}. {q}" for i, q in enumerate(question_texts)])}
+
+For each pair of duplicate questions, respond in this exact JSON format:
+{{
+  "duplicates": [
+    {{
+      "indices": [0, 3],
+      "similarity": 0.95,
+      "reason": "Both ask about age"
+    }}
+  ]
+}}
+
+Only include pairs that are truly asking the same thing. If no duplicates, return {{"duplicates": []}}.
+Response (JSON only):"""
+
+        response = client.chat_completion(
+            messages=[{"role": "user", "content": prompt}],
+            model="meta-llama/Llama-3.2-3B-Instruct",
+            max_tokens=1000,
+            temperature=0.3
+        )
+        
+        response_text = response.choices[0].message.content.strip()
+        
+        json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
+        if json_match:
+            result = json.loads(json_match.group())
+            duplicates_data = result.get('duplicates', [])
+            
+            duplicate_pairs = []
+            suggestions = []
+            
+            for dup in duplicates_data:
+                indices = dup.get('indices', [])
+                if len(indices) >= 2:
+                    duplicate_pairs.append(indices)
+                    suggestions.append({
+                        'indices': indices,
+                        'questions': [question_texts[i] for i in indices if i < len(question_texts)],
+                        'similarity': dup.get('similarity', 0.9),
+                        'suggestion': f"These questions appear to ask the same thing: {dup.get('reason', 'similar meaning')}"
+                    })
+            
+            return {
+                'duplicates': duplicate_pairs,
+                'suggestions': suggestions,
+                'total_duplicates': len(duplicate_pairs)
+            }
+        else:
+            return {
+                'duplicates': [],
+                'suggestions': [],
+                'total_duplicates': 0
+            }
+            
+    except Exception as e:
+        print(f"Error detecting duplicates: {e}")
+        return {
+            'duplicates': [],
+            'suggestions': [],
+            'error': str(e),
+            'total_duplicates': 0
         }

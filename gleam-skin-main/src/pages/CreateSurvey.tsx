@@ -16,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { RedundancyChecker, DuplicateGroup } from "@/components/RedundancyChecker";
 
 interface Question {
   id: string;
@@ -51,6 +52,10 @@ const CreateSurvey = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Redundancy Check
+  const [duplicates, setDuplicates] = useState<DuplicateGroup[]>([]);
+  const [isCheckingRedundancy, setIsCheckingRedundancy] = useState(false);
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -75,6 +80,82 @@ const CreateSurvey = () => {
 
   const deleteQuestion = (id: string) => {
     setQuestions(questions.filter((q) => q.id !== id));
+  };
+
+  const checkRedundancy = async () => {
+    if (questions.length < 2) {
+      toast({
+        title: "Not enough questions",
+        description: "Add at least 2 questions to check for redundancy",
+        variant: "default",
+      });
+      return;
+    }
+
+    setIsCheckingRedundancy(true);
+    try {
+      const response = await fetch('http://localhost:8000/api/ai/detect-redundancy/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ questions }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to check redundancy');
+      }
+
+      const result = await response.json();
+
+      if (result.duplicates && result.duplicates.length > 0) {
+        setDuplicates(result.suggestions);
+        toast({
+          title: "Redundancy Detected",
+          description: `Found ${result.total_duplicates} sets of similar questions`,
+          variant: "destructive",
+        });
+      } else {
+        setDuplicates([]);
+        toast({
+          title: "No Redundancy",
+          description: "Your questions look unique and good to go!",
+          variant: "default", // Changed from success to default as success might not exist
+        });
+      }
+    } catch (error) {
+      console.error('Redundancy check failed:', error);
+      toast({
+        title: "Error",
+        description: "Failed to check for redundancy",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCheckingRedundancy(false);
+    }
+  };
+
+  const handleRemoveDuplicate = (index: number) => {
+    const questionToRemove = questions[index];
+    if (questionToRemove) {
+      deleteQuestion(questionToRemove.id);
+      // Clear duplicates after modification as indices might shift
+      setDuplicates([]);
+    }
+  };
+
+  const handleMergeDuplicates = (indices: number[]) => {
+    // Keep the first question, remove others
+    // In a real app, you might want to combine them or ask user to select the best one
+    const idsToRemove = indices.slice(1).map(idx => questions[idx]?.id).filter(Boolean);
+
+    setQuestions(questions.filter(q => !idsToRemove.includes(q.id)));
+    setDuplicates([]); // Clear duplicates after modification
+
+    toast({
+      title: "Questions Merged",
+      description: "Kept the first question and removed duplicates",
+    });
   };
 
   const handleSendMessage = async () => {
@@ -264,8 +345,28 @@ const CreateSurvey = () => {
                 <PlusCircle className="w-4 h-4 mr-2" />
                 Add Question
               </Button>
+              <Button
+                type="button"
+                onClick={checkRedundancy}
+                variant="outline"
+                size="sm"
+                disabled={isCheckingRedundancy || questions.length < 2}
+              >
+                {isCheckingRedundancy ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Sparkles className="w-4 h-4 mr-2 text-orange-500" />
+                )}
+                Check Redundancy
+              </Button>
             </CardHeader>
             <CardContent className="space-y-4">
+              <RedundancyChecker
+                duplicates={duplicates}
+                onRemove={handleRemoveDuplicate}
+                onMerge={handleMergeDuplicates}
+              />
+
               {questions.length === 0 ? (
                 <p className="text-muted-foreground text-center py-8">
                   No questions yet. Click "Add Question" or "Chat with AI" to get started.
@@ -369,8 +470,8 @@ const CreateSurvey = () => {
                 >
                   <div
                     className={`max-w-[80%] rounded-2xl px-4 py-3 ${message.role === "user"
-                        ? "bg-gradient-primary text-white"
-                        : "bg-muted text-foreground border"
+                      ? "bg-gradient-primary text-white"
+                      : "bg-muted text-foreground border"
                       }`}
                   >
                     {message.role === "assistant" && (

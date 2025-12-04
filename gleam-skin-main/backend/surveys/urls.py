@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
     SurveyViewSet, QualificationTestViewSet, SurveyResponseViewSet, 
-    RespondentQualificationViewSet, chat_with_ai, generate_survey_from_chat
+    RespondentQualificationViewSet, chat_with_ai, generate_survey_from_chat, detect_redundancy
 )
 
 router = DefaultRouter()
@@ -15,4 +15,5 @@ urlpatterns = [
     path('', include(router.urls)),
     path('ai/chat/', chat_with_ai, name='chat-with-ai'),
     path('ai/generate-from-chat/', generate_survey_from_chat, name='generate-from-chat'),
+    path('ai/detect-redundancy/', detect_redundancy, name='detect-redundancy'),
 ]

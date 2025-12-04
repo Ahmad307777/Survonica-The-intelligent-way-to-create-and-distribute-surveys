@@ -2,7 +2,7 @@ from mongoengine import Document, StringField, ListField, BooleanField, IntField
 import datetime
 
 class Survey(Document):
-    user_id = IntField(required=True)  # Store Django User ID
+    user_id = StringField(required=True)  # Store MongoDB User ID (ObjectId as string)
     title = StringField(max_length=255, required=True)
     description = StringField()
     template = StringField(max_length=255)

@@ -23,15 +23,15 @@ class MongoEngineViewSet(viewsets.ViewSet):
         if serializer.is_valid():
             try:
                 self.perform_create(serializer)
-                print(f"✅ Survey created successfully: {serializer.data}")
+                print(f"[SUCCESS] Survey created successfully: {serializer.data}")
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             except Exception as e:
-                print(f"❌ Error creating survey: {type(e).__name__}: {e}")
+                print(f"[ERROR] Error creating survey: {type(e).__name__}: {e}")
                 return Response({
                     'detail': f'Error creating survey: {str(e)}',
                     'error': True
                 }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        print(f"❌ Validation errors: {serializer.errors}")
+        print(f"[ERROR] Validation errors: {serializer.errors}")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, pk=None):
@@ -80,9 +80,10 @@ class SurveyViewSet(MongoEngineViewSet):
             user_id = self.request.user.id if hasattr(self.request.user, 'id') else None
         
         if user_id:
-            serializer.save(user_id=int(user_id) if isinstance(user_id, str) else user_id)
+            # Keep user_id as string (MongoDB ObjectId) - don't convert to int
+            serializer.save(user_id=str(user_id))
         else:
-            serializer.save(user_id=0)  # Anonymous user
+            serializer.save(user_id="0")  # Anonymous user
 
 class QualificationTestViewSet(MongoEngineViewSet):
     """Qualification Test CRUD operations"""

@@ -1,0 +1,27 @@
+// Add to src/lib/api.ts - Add this function to the api object
+
+// In the api object, add:
+detectRedundancy: async (questions: any[]) => {
+    const response = await fetchWithCredentials(`${API_URL}/ai/detect-redundancy/`, {
+        method: 'POST',
+        body: JSON.stringify({ questions }),
+    });
+    if (!response.ok) throw new Error('Failed to detect redundancy');
+    return response.json();
+},
+
+// Also add qualification test endpoints:
+createQualificationTest: async (data: any) => {
+    const response = await fetchWithCredentials(`${API_URL}/qualification-tests/`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error('Failed to create qualification test');
+    return response.json();
+},
+
+getQualificationTest: async (surveyId: string) => {
+    const response = await fetchWithCredentials(`${API_URL}/qualification-tests/?survey=${surveyId}`);
+    if (!response.ok) throw new Error('Failed to fetch qualification test');
+    return response.json();
+},

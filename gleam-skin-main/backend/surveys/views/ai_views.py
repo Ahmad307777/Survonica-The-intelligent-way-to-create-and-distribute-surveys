@@ -50,3 +50,30 @@ def generate_survey_from_chat(request):
         return Response(result)
     except Exception as e:
         return Response({'detail': str(e), 'error': True}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+@authentication_classes([])
+def detect_redundancy(request):
+    """
+    Detect redundant/duplicate questions using AI
+    Expects: { "questions": [{"text": "...", "type": "...", "options": [...]}] }
+    Returns: { "duplicates": [[idx1, idx2], ...], "suggestions": [...] }
+    """
+    from ..ai_helper import detect_duplicate_questions
+    
+    questions = request.data.get('questions', [])
+    
+    if not questions or len(questions) < 2:
+        return Response({
+            'duplicates': [],
+            'suggestions': [],
+            'message': 'Need at least 2 questions to check for duplicates'
+        })
+    
+    try:
+        result = detect_duplicate_questions(questions)
+        return Response(result)
+    except Exception as e:
+        return Response({'detail': str(e), 'error': True}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
