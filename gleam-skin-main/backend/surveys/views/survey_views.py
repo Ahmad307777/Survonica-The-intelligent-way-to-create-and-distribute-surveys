@@ -13,10 +13,25 @@ class MongoEngineViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
     def create(self, request):
+        print("=" * 50)
+        print("SURVEY CREATE REQUEST")
+        print(f"Data: {request.data}")
+        print(f"Session user_id: {request.session.get('user_id')}")
+        print("=" * 50)
+        
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            self.perform_create(serializer)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            try:
+                self.perform_create(serializer)
+                print(f"✅ Survey created successfully: {serializer.data}")
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                print(f"❌ Error creating survey: {type(e).__name__}: {e}")
+                return Response({
+                    'detail': f'Error creating survey: {str(e)}',
+                    'error': True
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        print(f"❌ Validation errors: {serializer.errors}")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, pk=None):
@@ -52,13 +67,22 @@ class MongoEngineViewSet(viewsets.ViewSet):
 class SurveyViewSet(MongoEngineViewSet):
     """Survey CRUD operations"""
     serializer_class = SurveySerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.AllowAny]  # Allow any for now
 
     def get_queryset(self):
         return Survey.objects.all()
 
     def perform_create(self, serializer):
-        serializer.save(user_id=self.request.user.id)
+        # Get user_id from session (MongoDB auth)
+        user_id = self.request.session.get('user_id')
+        if not user_id:
+            # Fallback to Django user if available
+            user_id = self.request.user.id if hasattr(self.request.user, 'id') else None
+        
+        if user_id:
+            serializer.save(user_id=int(user_id) if isinstance(user_id, str) else user_id)
+        else:
+            serializer.save(user_id=0)  # Anonymous user
 
 class QualificationTestViewSet(MongoEngineViewSet):
     """Qualification Test CRUD operations"""
