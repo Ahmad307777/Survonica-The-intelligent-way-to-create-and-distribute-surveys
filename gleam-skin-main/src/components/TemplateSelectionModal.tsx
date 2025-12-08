@@ -12,21 +12,21 @@ interface TemplateOption {
 const templates: TemplateOption[] = [
     {
         id: "single-column",
-        name: "Single Column",
+        name: "Standard Scroll",
         description: "Classic vertical layout",
-        preview: "linear-gradient(to bottom, #3b82f6, #06b6d4)"
+        preview: "linear-gradient(to bottom, #e2e8f0, #ffffff)"
     },
     {
-        id: "two-column",
-        name: "Two Column",
-        description: "Side-by-side layout",
-        preview: "linear-gradient(to bottom, #3b82f6, #06b6d4)"
+        id: "page-by-page",
+        name: "Presentation",
+        description: "One question at a time",
+        preview: "linear-gradient(135deg, #6366f1 0%, #a855f7 100%)"
     },
     {
-        id: "card-grid",
-        name: "Card Grid",
-        description: "Modern card-based layout",
-        preview: "linear-gradient(to bottom, #3b82f6, #06b6d4)"
+        id: "minimalist",
+        name: "Minimalist Focus",
+        description: "Clean, distraction-free",
+        preview: "linear-gradient(to bottom, #f8fafc, #f8fafc)"
     }
 ];
 

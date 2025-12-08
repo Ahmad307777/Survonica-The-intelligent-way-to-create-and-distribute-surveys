@@ -232,3 +232,94 @@ Response (JSON only):"""
             'error': str(e),
             'total_duplicates': 0
         }
+
+def generate_options_for_question(question_text: str, api_key: str = None):
+    """
+    Generate multiple-choice options for a survey question using AI
+    
+    Args:
+        question_text: The question to generate options for
+        api_key: Hugging Face API key
+    
+    Returns:
+        { "options": ["Option 1", "Option 2", ...] }
+    """
+    if not api_key:
+        api_key = os.getenv('HUGGINGFACE_API_KEY')
+    
+    if not api_key:
+        raise ValueError("Hugging Face API key not provided")
+    
+    client = InferenceClient(token=api_key)
+    
+    try:
+        prompt = f"""Generate 5 likely multiple-choice options for this survey question:
+"{question_text}"
+
+Return a JSON object with a single key "options" containing a list of strings.
+Example: {{ "options": ["Satisfied", "Neutral", "Dissatisfied"] }}
+
+JSON Only:"""
+
+        response = client.chat_completion(
+            messages=[{"role": "user", "content": prompt}],
+            model="meta-llama/Llama-3.2-3B-Instruct",
+            max_tokens=200,
+            temperature=0.7
+        )
+        
+        response_text = response.choices[0].message.content.strip()
+        
+        # Parse JSON
+        json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
+        if json_match:
+            result = json.loads(json_match.group())
+            return result
+        else:
+            # Fallback primitive parsing if JSON fails
+            lines = [l.strip('- ').strip() for l in response_text.split('\n') if l.strip()]
+            return { "options": lines[:5] }
+            
+    except Exception as e:
+        print(f"Error generating options: {e}")
+        return { "options": [], "error": str(e) }
+
+def generate_image_from_text(prompt: str, api_key: str = None):
+    """
+    Generate an image from text using Stable Diffusion via Hugging Face
+    
+    Args:
+        prompt: The text prompt for image generation
+        api_key: Hugging Face API key
+    
+    Returns:
+        { "image": "data:image/png;base64,..." }
+    """
+    import base64
+    from io import BytesIO
+    
+    if not api_key:
+        api_key = os.getenv('HUGGINGFACE_API_KEY')
+    
+    if not api_key:
+        raise ValueError("Hugging Face API key not provided")
+    
+    # Use default model (Best available free option)
+    client = InferenceClient(token=api_key)
+    
+    try:
+        # Generate image
+        image = client.text_to_image(prompt)
+        
+        # Convert to Base64
+        buffered = BytesIO()
+        image.save(buffered, format="PNG")
+        img_str = base64.b64encode(buffered.getvalue()).decode()
+        
+        return { "image": f"data:image/png;base64,{img_str}" }
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        print(f"Error generating image: {e}")
+        return { "image": None, "error": str(e) }

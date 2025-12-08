@@ -95,7 +95,18 @@ export default function QualificationTestPage() {
                 description: "Survey and qualification test created successfully"
             });
 
-            navigate("/my-surveys");
+            // Redirect back to editor with data and preview mode enabled
+            navigate("/survey-editor", {
+                state: {
+                    surveyData: {
+                        ...surveyData,
+                        require_qualification: true,
+                        // Update with created survey ID if needed, but we pass full data for editor
+                    },
+                    template: surveyData.template, // Ensure template is passed back
+                    showPreview: true
+                }
+            });
         } catch (error: any) {
             toast({
                 title: "Error",

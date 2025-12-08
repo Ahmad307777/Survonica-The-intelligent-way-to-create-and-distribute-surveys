@@ -17,6 +17,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { RedundancyChecker, DuplicateGroup } from "@/components/RedundancyChecker";
+import { TemplateSelectionModal } from "@/components/TemplateSelectionModal";
 
 interface Question {
   id: string;
@@ -55,6 +56,10 @@ const CreateSurvey = () => {
   // Redundancy Check
   const [duplicates, setDuplicates] = useState<DuplicateGroup[]>([]);
   const [isCheckingRedundancy, setIsCheckingRedundancy] = useState(false);
+
+  // Template Selection
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<string>("");
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -248,9 +253,7 @@ const CreateSurvey = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const handleFinalizeSurvey = () => {
     if (questions.length === 0) {
       toast({
         title: "No questions",
@@ -260,32 +263,33 @@ const CreateSurvey = () => {
       return;
     }
 
-    setIsSubmitting(true);
-    try {
-      const surveyData = {
-        title,
-        description,
-        questions: questions.map(({ id, ...rest }) => rest),
-        user: 1, // This will be replaced with actual user ID from auth
-      };
-
-      await api.createSurvey(surveyData);
-
+    if (!title.trim()) {
       toast({
-        title: "Survey created!",
-        description: "Your survey has been created successfully.",
-      });
-
-      navigate("/surveys");
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create survey",
+        title: "Missing title",
+        description: "Please enter a survey title",
         variant: "destructive",
       });
-    } finally {
-      setIsSubmitting(false);
+      return;
     }
+
+    // Show template selection modal
+    setShowTemplateModal(true);
+  };
+
+  const handleTemplateSelect = (templateId: string) => {
+    setSelectedTemplate(templateId);
+
+    // Navigate to survey editor with survey data and template
+    navigate("/survey-editor", {
+      state: {
+        surveyData: {
+          title,
+          description,
+          questions: questions.map(({ id, ...rest }) => rest),
+        },
+        template: templateId,
+      },
+    });
   };
 
   return (
@@ -309,7 +313,7 @@ const CreateSurvey = () => {
           </Button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Survey Details</CardTitle>
@@ -440,14 +444,14 @@ const CreateSurvey = () => {
               Cancel
             </Button>
             <Button
-              type="submit"
-              disabled={isSubmitting}
+              type="button"
+              onClick={handleFinalizeSurvey}
               className="bg-gradient-primary hover:opacity-90"
             >
-              {isSubmitting ? "Creating..." : "Create Survey"}
+              Finalize Survey
             </Button>
           </div>
-        </form>
+        </div>
       </div>
 
       {/* AI Chat Dialog */}
@@ -522,6 +526,13 @@ const CreateSurvey = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Template Selection Modal */}
+      <TemplateSelectionModal
+        open={showTemplateModal}
+        onClose={() => setShowTemplateModal(false)}
+        onSelect={handleTemplateSelect}
+      />
     </DashboardLayout>
   );
 };

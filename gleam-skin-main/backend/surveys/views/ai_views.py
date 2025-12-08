@@ -77,3 +77,51 @@ def detect_redundancy(request):
         return Response(result)
     except Exception as e:
         return Response({'detail': str(e), 'error': True}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+@authentication_classes([])
+def generate_options(request):
+    """
+    Generate multiple choice options for a question
+    Expects: { "question": "..." }
+    Returns: { "options": [...] }
+    """
+    from ..ai_helper import generate_options_for_question
+    
+    question = request.data.get('question')
+    api_key = request.data.get('api_key')
+    
+    if not question:
+        return Response({'detail': 'Question text is required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        result = generate_options_for_question(question, api_key)
+        return Response(result)
+    except Exception as e:
+        return Response({'detail': str(e), 'error': True}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+@authentication_classes([])
+def generate_image_view(request):
+    """
+    Generate an image from text
+    Expects: { "prompt": "..." }
+    Returns: { "image": "data:image/png;base64,..." }
+    """
+    from ..ai_helper import generate_image_from_text
+    
+    prompt = request.data.get('prompt')
+    api_key = request.data.get('api_key')
+    
+    if not prompt:
+        return Response({'detail': 'Prompt is required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        result = generate_image_from_text(prompt, api_key)
+        return Response(result)
+    except Exception as e:
+        return Response({'detail': str(e), 'error': True}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

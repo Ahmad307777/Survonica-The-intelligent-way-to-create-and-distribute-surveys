@@ -15,6 +15,7 @@ import SurveyResults from "./pages/SurveyResults";
 import NotFound from "./pages/NotFound";
 import QualificationTest from "./pages/QualificationTest";
 import QualityControl from "./pages/QualityControl";
+import CreateQualificationTest from "./pages/CreateQualificationTest";
 
 const queryClient = new QueryClient();
 
@@ -32,7 +33,9 @@ const App = () => (
           <Route path="/create" element={<CreateSurvey />} />
           <Route path="/surveys" element={<MySurveys />} />
           <Route path="/editor/:id" element={<SurveyEditor />} />
+          <Route path="/survey-editor" element={<SurveyEditor />} />
           <Route path="/quality-control" element={<QualityControl />} />
+          <Route path="/create-qualification-test" element={<CreateQualificationTest />} />
           <Route path="/qualification/:surveyId" element={<QualificationTest />} />
           <Route path="/survey/:id" element={<SurveyResponse />} />
           <Route path="/results/:id" element={<SurveyResults />} />

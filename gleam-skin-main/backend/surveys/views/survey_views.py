@@ -88,7 +88,7 @@ class SurveyViewSet(MongoEngineViewSet):
 class QualificationTestViewSet(MongoEngineViewSet):
     """Qualification Test CRUD operations"""
     serializer_class = QualificationTestSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         queryset = QualificationTest.objects.all()
