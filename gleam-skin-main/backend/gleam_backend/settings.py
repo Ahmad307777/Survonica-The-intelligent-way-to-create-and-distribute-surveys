@@ -117,8 +117,7 @@ DATABASES = {
 # MongoDB Configuration
 import mongoengine
 mongoengine.connect(
-    db='gleam_surveys',
-    host='mongodb://localhost:27017/gleam_surveys'
+    host=os.getenv('MONGO_URI', 'mongodb://localhost:27017/gleam_surveys')
 )
 
 
@@ -163,3 +162,13 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Forced reload for env update
+
+# Email Configuration
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@survonica.com')
+

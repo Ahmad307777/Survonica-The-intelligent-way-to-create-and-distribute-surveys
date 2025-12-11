@@ -17,98 +17,91 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 220 15% 15%;
 
-    --primary: 266 85% 60%;
+    /* NAVY BLUE & TEAL THEME */
+    --primary: 215 100% 25%;
+    /* Navy Blue */
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 280 90% 70%;
-    --primary-hover: 266 85% 60%;
-    /* Added from old root */
+    --primary-glow: 190 90% 45%;
+    /* Teal Glow */
+    --primary-hover: 215 90% 30%;
 
-    --secondary: 322 80% 55%;
+    --secondary: 190 90% 45%;
+    /* Teal/Cyan */
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 220 15% 95%;
-    --muted-foreground: 220 10% 50%;
+    --muted: 220 15% 96%;
+    --muted-foreground: 215 20% 50%;
 
-    --accent: 195 90% 50%;
+    --accent: 190 90% 45%;
     --accent-foreground: 0 0% 100%;
 
-    --success: 142 76% 56%;
-    /* Added from old root */
+    --success: 150 100% 35%;
     --success-foreground: 0 0% 100%;
-    /* Added from old root */
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 15% 88%;
-    --input: 220 15% 92%;
-    --ring: 266 85% 60%;
+    --border: 215 20% 90%;
+    --input: 215 20% 92%;
+    --ring: 215 100% 25%;
 
-    --radius: 1.2rem;
-    /* Kept from old root */
+    --radius: 0.75rem;
+    /* Slightly sharper for professional look */
 
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 220 15% 25%;
-    --sidebar-primary: 266 85% 60%;
+    --sidebar-foreground: 215 30% 25%;
+    --sidebar-primary: 215 100% 25%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 15% 95%;
-    --sidebar-accent-foreground: 266 85% 50%;
-    --sidebar-border: 220 15% 88%;
-    --sidebar-ring: 266 85% 60%;
+    --sidebar-accent: 210 20% 96%;
+    --sidebar-accent-foreground: 215 100% 25%;
+    --sidebar-border: 215 20% 90%;
+    --sidebar-ring: 215 100% 25%;
 
     /* Vibrant gradient system */
-    --gradient-primary: linear-gradient(135deg, hsl(266, 85%, 60%) 0%, hsl(280, 90%, 65%) 50%, hsl(195, 90%, 55%) 100%);
-    --gradient-secondary: linear-gradient(135deg, hsl(322, 80%, 60%) 0%, hsl(340, 85%, 65%) 100%);
-    /* Added from old root */
+    --gradient-primary: linear-gradient(135deg, hsl(215, 100%, 25%) 0%, hsl(200, 90%, 40%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(190, 90%, 45%) 0%, hsl(170, 80%, 50%) 100%);
     --gradient-success: linear-gradient(135deg, hsl(142, 76%, 56%) 0%, hsl(158, 80%, 60%) 100%);
-    /* Added from old root */
-    --gradient-hero: linear-gradient(135deg, hsl(266, 85%, 60%) 0%, hsl(280, 90%, 65%) 30%, hsl(195, 90%, 55%) 70%, hsl(322, 80%, 60%) 100%);
-    --gradient-subtle: linear-gradient(180deg, hsl(220, 25%, 98%) 0%, hsl(240, 50%, 99%) 100%);
-    --gradient-card: linear-gradient(135deg, hsl(240, 8%, 10%) 0%, hsl(240, 8%, 12%) 100%);
-    /* Kept as is, might need light version? Using old root value for now as placeholder or remove? Old root had it. Let's keep old root value in .dark and find light equivalent? The old .dark didn't have it. I'll leave it out of light root if not present in old .dark */
+    --gradient-hero: linear-gradient(135deg, hsl(215, 100%, 25%) 0%, hsl(200, 90%, 40%) 50%, hsl(190, 90%, 45%) 100%);
+    --gradient-subtle: linear-gradient(180deg, hsl(215, 20%, 98%) 0%, hsl(215, 30%, 99%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(215, 100%, 25%) 0%, hsl(215, 90%, 30%) 100%);
 
     /* Enhanced shadow system */
-    --shadow-elegant: 0 20px 50px -12px hsl(266 85% 50% / 0.25);
-    --shadow-glow: 0 0 80px hsl(266 85% 65% / 0.4), 0 0 40px hsl(280 90% 70% / 0.3);
-    /* Added from old root */
-    --shadow-card: 0 8px 24px hsl(240 10% 0% / 0.4);
-    /* Added from old root */
-    --shadow-hover: 0 20px 60px -10px hsl(266 85% 60% / 0.5);
-    /* Added from old root */
-    --shadow-option: 0 4px 12px hsl(240 10% 0% / 0.3);
-    /* Added from old root */
-    --shadow-option-hover: 0 10px 30px hsl(266 85% 60% / 0.4);
-    /* Added from old root */
-    --shadow-neon: 0 0 20px hsl(266 85% 65% / 0.6), 0 0 40px hsl(266 85% 65% / 0.4), inset 0 0 20px hsl(266 85% 65% / 0.1);
-    /* Added from old root */
+    --shadow-elegant: 0 20px 50px -12px hsl(215 100% 25% / 0.15);
+    --shadow-glow: 0 0 80px hsl(190 90% 45% / 0.3), 0 0 40px hsl(215 100% 25% / 0.2);
+    --shadow-card: 0 8px 24px hsl(215 20% 10% / 0.08);
+    --shadow-hover: 0 20px 60px -10px hsl(215 100% 25% / 0.25);
+    --shadow-option: 0 4px 12px hsl(215 20% 10% / 0.05);
+    --shadow-option-hover: 0 10px 30px hsl(215 100% 25% / 0.15);
+    --shadow-neon: 0 0 20px hsl(190 90% 45% / 0.4), 0 0 40px hsl(190 90% 45% / 0.2);
 
     --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
 
   .dark {
-    --background: 240 10% 5%;
-    --foreground: 240 5% 98%;
+    --background: 215 30% 8%;
+    --foreground: 215 10% 98%;
 
-    --card: 240 8% 10%;
-    --card-foreground: 240 5% 98%;
+    --card: 215 25% 12%;
+    --card-foreground: 215 10% 98%;
 
-    --popover: 240 8% 12%;
-    --popover-foreground: 240 5% 98%;
+    --popover: 215 25% 12%;
+    --popover-foreground: 215 10% 98%;
 
-    --primary: 266 85% 65%;
+    --primary: 215 100% 65%;
+    /* Lighter blue for dark mode */
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 266 85% 60%;
-    --primary-glow: 280 90% 75%;
+    --primary-hover: 215 100% 60%;
+    --primary-glow: 190 90% 60%;
 
-    --secondary: 322 80% 60%;
+    --secondary: 190 90% 55%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 240 5% 20%;
-    --muted-foreground: 240 5% 60%;
+    --muted: 215 20% 20%;
+    --muted-foreground: 215 20% 60%;
 
-    --accent: 195 90% 55%;
-    --accent-foreground: 240 8% 10%;
+    --accent: 190 90% 55%;
+    --accent-foreground: 215 20% 10%;
 
     --success: 142 76% 56%;
     --success-foreground: 0 0% 100%;
@@ -116,36 +109,36 @@ All colors MUST be HSL.
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 5% 18%;
-    --input: 240 5% 18%;
-    --ring: 266 85% 65%;
+    --border: 215 25% 20%;
+    --input: 215 25% 22%;
+    --ring: 215 100% 65%;
 
-    --sidebar-background: 240 8% 8%;
-    --sidebar-foreground: 240 5% 98%;
-    --sidebar-primary: 266 85% 65%;
+    --sidebar-background: 215 30% 10%;
+    --sidebar-foreground: 215 10% 96%;
+    --sidebar-primary: 215 100% 65%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 5% 16%;
-    --sidebar-accent-foreground: 266 85% 65%;
-    --sidebar-border: 240 5% 18%;
-    --sidebar-ring: 266 85% 65%;
+    --sidebar-accent: 215 25% 18%;
+    --sidebar-accent-foreground: 215 100% 65%;
+    --sidebar-border: 215 25% 20%;
+    --sidebar-ring: 215 100% 65%;
 
     /* Vibrant gradient system */
-    --gradient-primary: linear-gradient(135deg, hsl(266, 85%, 65%) 0%, hsl(280, 90%, 70%) 50%, hsl(195, 90%, 60%) 100%);
-    --gradient-secondary: linear-gradient(135deg, hsl(322, 80%, 60%) 0%, hsl(340, 85%, 65%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(215, 100%, 65%) 0%, hsl(200, 90%, 60%) 100%);
+    --gradient-secondary: linear-gradient(135deg, hsl(190, 90%, 55%) 0%, hsl(170, 80%, 50%) 100%);
     --gradient-success: linear-gradient(135deg, hsl(142, 76%, 56%) 0%, hsl(158, 80%, 60%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(266, 85%, 65%) 0%, hsl(280, 90%, 70%) 30%, hsl(195, 90%, 60%) 70%, hsl(322, 80%, 65%) 100%);
-    --gradient-subtle: linear-gradient(180deg, hsl(240, 10%, 5%) 0%, hsl(240, 10%, 8%) 100%);
-    --gradient-card: linear-gradient(135deg, hsl(240, 8%, 10%) 0%, hsl(240, 8%, 12%) 100%);
-    --gradient-mesh: radial-gradient(at 40% 20%, hsl(266, 85%, 30%) 0, transparent 50%), radial-gradient(at 80% 0%, hsl(195, 90%, 30%) 0, transparent 50%), radial-gradient(at 0% 50%, hsl(322, 80%, 25%) 0, transparent 50%);
+    --gradient-hero: linear-gradient(135deg, hsl(215, 100%, 65%) 0%, hsl(200, 90%, 60%) 50%, hsl(190, 90%, 55%) 100%);
+    --gradient-subtle: linear-gradient(180deg, hsl(215, 30%, 8%) 0%, hsl(215, 30%, 10%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(215, 25%, 12%) 0%, hsl(215, 25%, 15%) 100%);
+    --gradient-mesh: radial-gradient(at 40% 20%, hsl(215, 100%, 40%) 0, transparent 50%), radial-gradient(at 80% 0%, hsl(190, 100%, 40%) 0, transparent 50%);
 
     /* Enhanced shadow system */
-    --shadow-elegant: 0 20px 50px -12px hsl(266 85% 50% / 0.35);
-    --shadow-glow: 0 0 80px hsl(266 85% 65% / 0.4), 0 0 40px hsl(280 90% 70% / 0.3);
-    --shadow-card: 0 8px 24px hsl(240 10% 0% / 0.4);
-    --shadow-hover: 0 20px 60px -10px hsl(266 85% 60% / 0.5);
-    --shadow-option: 0 4px 12px hsl(240 10% 0% / 0.3);
-    --shadow-option-hover: 0 10px 30px hsl(266 85% 60% / 0.4);
-    --shadow-neon: 0 0 20px hsl(266 85% 65% / 0.6), 0 0 40px hsl(266 85% 65% / 0.4), inset 0 0 20px hsl(266 85% 65% / 0.1);
+    --shadow-elegant: 0 20px 50px -12px hsl(215 100% 50% / 0.2);
+    --shadow-glow: 0 0 80px hsl(215 100% 60% / 0.4), 0 0 40px hsl(190 90% 60% / 0.3);
+    --shadow-card: 0 8px 24px hsl(215 50% 5% / 0.6);
+    --shadow-hover: 0 20px 60px -10px hsl(215 100% 60% / 0.3);
+    --shadow-option: 0 4px 12px hsl(215 50% 5% / 0.5);
+    --shadow-option-hover: 0 10px 30px hsl(215 100% 60% / 0.25);
+    --shadow-neon: 0 0 20px hsl(215 100% 65% / 0.6), 0 0 40px hsl(190 90% 60% / 0.4);
   }
 }
 

@@ -43,13 +43,8 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   const NavContent = () => (
     <>
-      <div className="flex items-center gap-2 px-4 py-6 border-b">
-        <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-primary">
-          <Sparkles className="w-6 h-6 text-primary-foreground" />
-        </div>
-        <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent font-['Space_Grotesk']">
-          Survonica
-        </span>
+      <div className="w-full flex items-center justify-center px-6 py-8 border-b">
+        <img src="/survonica-logo.png" alt="Survonica" className="w-full h-auto object-contain" />
       </div>
 
       <nav className="flex-1 p-4 space-y-2">
@@ -95,12 +90,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-card border-b">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-2">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-primary">
-              <Sparkles className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <span className="text-lg font-bold bg-gradient-primary bg-clip-text text-transparent font-['Space_Grotesk']">
-              Survonica
-            </span>
+            <img src="/survonica-logo.png" alt="Survonica" className="h-12 w-auto object-contain" />
           </div>
           <Sheet>
             <SheetTrigger asChild>

@@ -37,13 +37,8 @@ const Signup = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-subtle px-4">
       <div className="w-full max-w-md">
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-primary">
-            <Sparkles className="w-6 h-6 text-primary-foreground" />
-          </div>
-          <span className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent font-['Space_Grotesk']">
-            Survonica
-          </span>
+        <div className="flex items-center justify-center gap-2 mb-8 px-8">
+          <img src="/survonica-logo.png" alt="Survonica" className="w-full max-w-[300px] h-auto object-contain" />
         </div>
 
         <Card className="shadow-elegant animate-fade-in">

@@ -14,7 +14,7 @@ serve(async (req) => {
 
   try {
     const { surveyId } = await req.json();
-    
+
     if (!surveyId) {
       throw new Error('Survey ID is required');
     }
@@ -41,7 +41,7 @@ serve(async (req) => {
     if (responsesError) throw responsesError;
 
     if (!responses || responses.length === 0) {
-      return new Response(JSON.stringify({ 
+      return new Response(JSON.stringify({
         error: 'No responses found for this survey',
         stats: {
           totalResponses: 0,
@@ -56,11 +56,11 @@ serve(async (req) => {
 
     // Calculate basic statistics
     const totalResponses = responses.length;
-    
+
     // Analyze responses with AI
-    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
-    if (!lovableApiKey) {
-      throw new Error('LOVABLE_API_KEY is not configured');
+    const aiServiceApiKey = Deno.env.get('AI_SERVICE_API_KEY') || Deno.env.get('LOVABLE_API_KEY');
+    if (!aiServiceApiKey) {
+      throw new Error('AI_SERVICE_API_KEY is not configured');
     }
 
     // Prepare data for AI analysis
@@ -93,7 +93,7 @@ serve(async (req) => {
       if (q.type === 'multiple-choice' && q.options) {
         const optionCounts: Record<string, number> = {};
         q.options.forEach(opt => optionCounts[opt] = 0);
-        
+
         q.responses.forEach(response => {
           if (optionCounts.hasOwnProperty(response)) {
             optionCounts[response]++;
@@ -131,9 +131,9 @@ Question Analysis:
 ${JSON.stringify(questionStats, null, 2)}
 
 All Text Responses:
-${aggregatedData.filter(q => q.type !== 'multiple-choice').map(q => 
-  `Question: ${q.question}\nResponses: ${q.responses.join('; ')}`
-).join('\n\n')}
+${aggregatedData.filter(q => q.type !== 'multiple-choice').map(q =>
+      `Question: ${q.question}\nResponses: ${q.responses.join('; ')}`
+    ).join('\n\n')}
 
 Please provide:
 1. Overall Sentiment Analysis (positive/neutral/negative percentage)
@@ -158,7 +158,7 @@ Format your response as JSON with this structure:
     const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${lovableApiKey}`,
+        'Authorization': `Bearer ${aiServiceApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -178,7 +178,7 @@ Format your response as JSON with this structure:
 
     const aiData = await aiResponse.json();
     let aiInsights;
-    
+
     try {
       const content = aiData.choices[0].message.content;
       // Try to extract JSON from the response (might be wrapped in markdown code blocks)
@@ -211,9 +211,9 @@ Format your response as JSON with this structure:
 
   } catch (error) {
     console.error('Error in analyze-survey function:', error);
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       error: error instanceof Error ? error.message : 'Unknown error occurred',
-      details: error 
+      details: error
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

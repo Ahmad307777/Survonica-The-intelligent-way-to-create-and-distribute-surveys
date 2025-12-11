@@ -9,6 +9,8 @@ class Survey(Document):
     questions = ListField(DictField())  # List of question dictionaries
     require_qualification = BooleanField(default=False)
     qualification_pass_score = IntField()
+    allowed_domains = ListField(StringField())  # List of allowed email domains (e.g., ["namal.edu.pk"])
+    design = DictField() # Stores visual customization (colors, fonts, logo)
     created_at = DateTimeField(default=datetime.datetime.utcnow)
     updated_at = DateTimeField(default=datetime.datetime.utcnow)
 

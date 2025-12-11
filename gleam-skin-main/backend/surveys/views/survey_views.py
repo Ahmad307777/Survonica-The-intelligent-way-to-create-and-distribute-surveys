@@ -1,4 +1,5 @@
 from rest_framework import viewsets, status, permissions
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from ..models import Survey, QualificationTest, SurveyResponse, RespondentQualification
 from ..serializers import SurveySerializer, QualificationTestSerializer, SurveyResponseSerializer, RespondentQualificationSerializer
@@ -84,6 +85,65 @@ class SurveyViewSet(MongoEngineViewSet):
             serializer.save(user_id=str(user_id))
         else:
             serializer.save(user_id="0")  # Anonymous user
+
+    @action(detail=True, methods=['post'])
+    def send_invite(self, request, pk=None):
+        """Send email invitations for the survey"""
+        survey = self.get_object()
+        emails = request.data.get('emails', [])
+        domain_restriction = request.data.get('domain_restriction', 'public') # 'public' or 'restricted'
+        allowed_domain = request.data.get('allowed_domain', '')
+
+        if not emails:
+            return Response({'error': 'No emails provided'}, status=status.HTTP_400_BAD_REQUEST)
+
+        print(f"Sending invites for survey '{survey.title}'")
+        print(f"Recipients: {emails}")
+        
+        # Update survey restrictions
+        if domain_restriction == 'restricted' and allowed_domain:
+            survey.allowed_domains = [allowed_domain]
+            print(f"Restricting survey to domain: {allowed_domain}")
+        else:
+            survey.allowed_domains = [] # Clear restrictions if public
+            print("Survey is public (no domain restrictions)")
+        
+        survey.save()
+
+        # Implement actual email sending logic
+        from django.core.mail import send_mail
+        from django.conf import settings
+        
+        subject = f"You're invited to take a survey: {survey.title}"
+        survey_link = f"http://localhost:8080/survey/{survey.id}"
+        
+        message = f"""
+        Hello!
+        
+        You have been invited to participate in a survey: "{survey.title}".
+        
+        Please click the link below to start the survey:
+        {survey_link}
+        
+        Thank you for your time!
+        
+        Survonica Team
+        """
+        
+        try:
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                emails,
+                fail_silently=False,
+            )
+            print(f"[SUCCESS] Invites sent to {len(emails)} recipients")
+        except Exception as e:
+            print(f"[ERROR] Failed to send email: {e}")
+            return Response({'error': f'Failed to send emails: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response({'message': f'Invites sent to {len(emails)} recipients'}, status=status.HTTP_200_OK)
 
 class QualificationTestViewSet(MongoEngineViewSet):
     """Qualification Test CRUD operations"""

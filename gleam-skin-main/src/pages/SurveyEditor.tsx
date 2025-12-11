@@ -1,19 +1,19 @@
-import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Eye, Shield, Save, Share2, GripVertical, Trash2, Palette, Type, Layout, ChevronUp, ChevronDown, Check } from "lucide-react";
+import { Eye, Shield, Save, Share2, GripVertical, Trash2, Palette, Type, Layout, ChevronUp, ChevronDown, Check, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
-import { Loader2, Sparkles, Star } from "lucide-react"; // Added Star
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"; // Added Dialog imports
+import { Loader2, Sparkles, Star } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 interface Question {
   text: string;
@@ -21,18 +21,50 @@ interface Question {
   required: boolean;
   options?: string[];
   ratingType?: 'number' | 'star';
-  imageUrl?: string; // Added imageUrl
+  imageUrl?: string;
 }
 
 export default function SurveyEditor() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { id } = useParams(); // Get ID from URL
   const { toast } = useToast();
 
-  const { surveyData, template, showPreview } = location.state || {}; // Added showPreview
-  const [questions, setQuestions] = useState<Question[]>(surveyData?.questions || []);
-  const [title, setTitle] = useState(surveyData?.title || "Generated Survey");
-  const [requireQualification, setRequireQualification] = useState(surveyData?.require_qualification || false); // Use passed data if available
+  const { surveyData: initialSurveyData, template: initialTemplate, showPreview } = location.state || {};
+
+  // Initialize state with props OR defaults, but allow updates from fetch
+  const [questions, setQuestions] = useState<Question[]>(initialSurveyData?.questions || []);
+  const [title, setTitle] = useState(initialSurveyData?.title || "Generated Survey");
+  const [requireQualification, setRequireQualification] = useState(initialSurveyData?.require_qualification || false);
+  const [template, setTemplate] = useState<string>(initialTemplate || "single-column");
+  const [surveyId, setSurveyId] = useState<string | null>(initialSurveyData?.id || id || null);
+
+  useEffect(() => {
+    // If we have an ID but no initial data (e.g. direct URL access or refresh), fetch it
+    if (surveyId && !initialSurveyData) {
+      const fetchSurvey = async () => {
+        try {
+          const response = await fetch(`http://localhost:8000/api/surveys/${surveyId}/`);
+          if (response.ok) {
+            const data = await response.json();
+            setTitle(data.title);
+            setQuestions(data.questions || []);
+            setTemplate(data.template || "single-column");
+            setRequireQualification(data.require_qualification || false);
+            if (data.design) {
+              setDesign(data.design);
+            }
+          } else {
+            toast({ title: "Error", description: "Survey not found", variant: "destructive" });
+          }
+        } catch (error) {
+          console.error("Fetch error:", error);
+          toast({ title: "Error", description: "Failed to load survey", variant: "destructive" });
+        }
+      };
+      fetchSurvey();
+    }
+  }, [surveyId, initialSurveyData, toast]);
 
   // Design State
   const [design, setDesign] = useState({
@@ -181,16 +213,46 @@ export default function SurveyEditor() {
 
   const handleSave = async () => {
     try {
-      // Save survey logic here
+      const payload = {
+        title,
+        questions,
+        template,
+        require_qualification: requireQualification,
+        design: design
+      };
+
+      let response;
+      if (surveyId) {
+        // Update existing survey
+        response = await fetch(`http://localhost:8000/api/surveys/${surveyId}/`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      } else {
+        // Create new survey
+        response = await fetch('http://localhost:8000/api/surveys/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Failed to save');
+      }
+
       toast({
         title: "Survey Saved",
         description: "Your survey has been saved successfully"
       });
       navigate("/my-surveys");
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Save error:", error);
       toast({
         title: "Error",
-        description: "Failed to save survey",
+        description: error.message || "Failed to save survey",
         variant: "destructive"
       });
     }
@@ -212,13 +274,18 @@ export default function SurveyEditor() {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div>
-                <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600">
-                  {title || "Untitled Survey"}
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                  {isPreviewMode ? "Visual Editor Mode" : "Structure Editor"}
-                </p>
+              <div className="flex items-center gap-3">
+                <Button variant="ghost" size="icon" onClick={() => navigate('/my-surveys')} className="mr-2">
+                  <ArrowLeft className="w-5 h-5 text-gray-500" />
+                </Button>
+                <div>
+                  <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600">
+                    {title || "Untitled Survey"}
+                  </h1>
+                  <p className="text-sm text-muted-foreground">
+                    {isPreviewMode ? "Visual Editor Mode" : "Structure Editor"}
+                  </p>
+                </div>
               </div>
               <div className="h-8 w-px bg-gray-200 mx-2" />
               <div className="flex bg-muted p-1 rounded-lg">
@@ -238,6 +305,22 @@ export default function SurveyEditor() {
                 >
                   Visual / Design
                 </Button>
+              </div>
+
+              <div className="h-8 w-px bg-gray-200 mx-2" />
+
+              {/* Template Switcher */}
+              <div className="w-48">
+                <Select value={template} onValueChange={setTemplate}>
+                  <SelectTrigger className="h-8 text-xs border-dashed bg-transparent border-gray-300">
+                    <SelectValue placeholder="Select Template" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="single-column">Standard Scroll</SelectItem>
+                    <SelectItem value="page-by-page">Page-by-Page</SelectItem>
+                    <SelectItem value="minimalist">Minimalist</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 

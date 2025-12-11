@@ -18,8 +18,15 @@ class SurveySerializer(MongoEngineSerializer):
     questions = serializers.ListField(child=serializers.DictField(), required=False)
     require_qualification = serializers.BooleanField(default=False)
     qualification_pass_score = serializers.IntegerField(required=False, allow_null=True)
+    allowed_domains = serializers.ListField(child=serializers.CharField(), required=False)
+    design = serializers.DictField(required=False)
     created_at = serializers.DateTimeField(read_only=True)
     updated_at = serializers.DateTimeField(read_only=True)
+    response_count = serializers.SerializerMethodField()
+
+    def get_response_count(self, obj):
+        # Count responses for this survey
+        return SurveyResponse.objects(survey=obj).count()
 
     def create(self, validated_data):
         return Survey(**validated_data).save()
