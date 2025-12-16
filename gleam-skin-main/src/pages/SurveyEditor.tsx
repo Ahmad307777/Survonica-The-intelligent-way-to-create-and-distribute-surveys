@@ -247,7 +247,7 @@ export default function SurveyEditor() {
         title: "Survey Saved",
         description: "Your survey has been saved successfully"
       });
-      navigate("/my-surveys");
+      navigate("/surveys");
     } catch (error: any) {
       console.error("Save error:", error);
       toast({

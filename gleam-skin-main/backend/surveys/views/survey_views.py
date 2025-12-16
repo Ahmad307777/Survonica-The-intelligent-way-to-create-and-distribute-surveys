@@ -14,25 +14,25 @@ class MongoEngineViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
     def create(self, request):
-        print("=" * 50)
-        print("SURVEY CREATE REQUEST")
-        print(f"Data: {request.data}")
-        print(f"Session user_id: {request.session.get('user_id')}")
-        print("=" * 50)
+        # print("=" * 50)
+        # print("SURVEY CREATE REQUEST")
+        # print(f"Data: {request.data}")
+        # print(f"Session user_id: {request.session.get('user_id')}")
+        # print("=" * 50)
         
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             try:
                 self.perform_create(serializer)
-                print(f"[SUCCESS] Survey created successfully: {serializer.data}")
+                # print(f"[SUCCESS] Survey created successfully: {serializer.data}")
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             except Exception as e:
-                print(f"[ERROR] Error creating survey: {type(e).__name__}: {e}")
+                # print(f"[ERROR] Error creating survey: {type(e).__name__}: {e}")
                 return Response({
                     'detail': f'Error creating survey: {str(e)}',
                     'error': True
                 }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        print(f"[ERROR] Validation errors: {serializer.errors}")
+        # print(f"[ERROR] Validation errors: {serializer.errors}")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, pk=None):
@@ -89,61 +89,62 @@ class SurveyViewSet(MongoEngineViewSet):
     @action(detail=True, methods=['post'])
     def send_invite(self, request, pk=None):
         """Send email invitations for the survey"""
-        survey = self.get_object()
-        emails = request.data.get('emails', [])
-        domain_restriction = request.data.get('domain_restriction', 'public') # 'public' or 'restricted'
-        allowed_domain = request.data.get('allowed_domain', '')
-
-        if not emails:
-            return Response({'error': 'No emails provided'}, status=status.HTTP_400_BAD_REQUEST)
-
-        print(f"Sending invites for survey '{survey.title}'")
-        print(f"Recipients: {emails}")
-        
-        # Update survey restrictions
-        if domain_restriction == 'restricted' and allowed_domain:
-            survey.allowed_domains = [allowed_domain]
-            print(f"Restricting survey to domain: {allowed_domain}")
-        else:
-            survey.allowed_domains = [] # Clear restrictions if public
-            print("Survey is public (no domain restrictions)")
-        
-        survey.save()
-
-        # Implement actual email sending logic
         from django.core.mail import send_mail
         from django.conf import settings
         
-        subject = f"You're invited to take a survey: {survey.title}"
-        survey_link = f"http://localhost:8080/survey/{survey.id}"
-        
-        message = f"""
-        Hello!
-        
-        You have been invited to participate in a survey: "{survey.title}".
-        
-        Please click the link below to start the survey:
-        {survey_link}
-        
-        Thank you for your time!
-        
-        Survonica Team
-        """
-        
+        # Debug log to verify request reached here
+        with open("debug_hit.txt", "a") as f:
+            f.write(f"Hit send_invite for PK: {pk}\n")
+
         try:
+            try:
+                survey = self.get_queryset().get(id=pk)
+            except DoesNotExist:
+                return Response({'error': 'Survey not found'}, status=status.HTTP_404_NOT_FOUND)
+
+            emails = request.data.get('emails', [])
+            domain_restriction = request.data.get('domain_restriction', 'public') # 'public' or 'restricted'
+            allowed_domain = request.data.get('allowed_domain', '')
+
+            if not emails:
+                return Response({'error': 'No emails provided'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Update survey restrictions
+            if domain_restriction == 'restricted' and allowed_domain:
+                survey.allowed_domains = [allowed_domain]
+            else:
+                survey.allowed_domains = [] # Clear restrictions if public
+            
+            survey.save()
+
+            subject = f"You're invited to take a survey: {survey.title}"
+            message = f"Please click the link below to participate in the survey:\n\nhttp://localhost:8080/survey/{survey.id}\n\nThank you!"
+            from_email = settings.EMAIL_HOST_USER
+            
             send_mail(
                 subject,
                 message,
-                settings.DEFAULT_FROM_EMAIL,
+                from_email,
                 emails,
                 fail_silently=False,
             )
-            print(f"[SUCCESS] Invites sent to {len(emails)} recipients")
-        except Exception as e:
-            print(f"[ERROR] Failed to send email: {e}")
-            return Response({'error': f'Failed to send emails: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+            return Response({'message': f'Invites sent successfully to {len(emails)} recipients'}, status=status.HTTP_200_OK)
 
-        return Response({'message': f'Invites sent to {len(emails)} recipients'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            import traceback
+            import sys
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            error_details = traceback.format_exception(exc_type, exc_value, exc_traceback)
+            
+            with open("error_log.txt", "w", encoding='utf-8') as f:
+                f.write("".join(error_details))
+                
+            return Response({
+                'error': 'Internal Server Error',
+                'detail': str(e),
+                'traceback': "".join(error_details[-3:]) # Return last few lines to frontend
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class QualificationTestViewSet(MongoEngineViewSet):
     """Qualification Test CRUD operations"""

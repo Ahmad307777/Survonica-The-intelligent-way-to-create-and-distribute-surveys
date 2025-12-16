@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "C:\Users\namal\Downloads\Compressed\gleam-skin-main\gleam-skin-main\backend\surveys\views\survey_views.py", line 118, in send_invite
+    survey.save()
+    ~~~~~~~~~~~^^
+  File "C:\Users\namal\Downloads\Compressed\gleam-skin-main\gleam-skin-main\backend\surveys\models.py", line 19, in save
+    return super(Survey, self).save(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\namal\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\mongoengine\document.py", line 422, in save
+    self.validate(clean=clean)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\namal\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\mongoengine\base\document.py", line 440, in validate
+    raise ValidationError(message, errors=errors)
+mongoengine.errors.ValidationError: ValidationError (Survey:693945ae14fe29895a51c627) (StringField only accepts string values: ['user_id'])

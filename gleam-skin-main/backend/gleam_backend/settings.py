@@ -117,8 +117,13 @@ DATABASES = {
 # MongoDB Configuration
 import mongoengine
 mongoengine.connect(
-    host=os.getenv('MONGO_URI', 'mongodb://localhost:27017/gleam_surveys')
+    host=os.getenv('MONGO_URI'),
+    db='gleam_surveys'
 )
+try:
+    print(f" !!! ACTIVE DATABASE: {mongoengine.connection.get_db().name} !!!")
+except:
+    print("Could not determine active database yet.")
 
 
 # Password validation

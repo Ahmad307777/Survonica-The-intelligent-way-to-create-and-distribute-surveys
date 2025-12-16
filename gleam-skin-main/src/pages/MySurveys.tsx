@@ -143,7 +143,10 @@ const MySurveys = () => {
         }),
       });
 
-      if (!response.ok) throw new Error("Failed to send invites");
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || errData.detail || `Server Error: ${response.status}`);
+      }
 
       const result = await response.json();
 
@@ -153,15 +156,41 @@ const MySurveys = () => {
       });
 
       setSharingSurvey(null); // Close dialog
-    } catch (error) {
+    } catch (error: any) {
       console.error("Share error:", error);
       toast({
         title: "Error sending invites",
-        description: "There was a problem sending the emails. Please try again.",
+        description: error.message || "Unknown error occurred",
         variant: "destructive",
       });
     } finally {
       setIsSending(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this survey?")) return;
+
+    try {
+      const response = await fetch(`http://localhost:8000/api/surveys/${id}/`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setSurveys(surveys.filter((s: any) => s.id !== id));
+        toast({
+          title: "Survey deleted",
+          description: "The survey has been permanently removed.",
+        });
+      } else {
+        throw new Error("Failed to delete");
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete survey",
+        variant: "destructive",
+      });
     }
   };
 
@@ -269,7 +298,7 @@ const MySurveys = () => {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="bg-popover z-50">
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate(`/survey/${survey.id}`)}>
                           <Eye className="w-4 h-4 mr-2" />
                           Preview
                         </DropdownMenuItem>
@@ -281,11 +310,11 @@ const MySurveys = () => {
                           <Share2 className="w-4 h-4 mr-2" />
                           Share
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate(`/results/${survey.id}`)}>
                           <BarChart3 className="w-4 h-4 mr-2" />
                           View Results
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
+                        <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(survey.id)}>
                           <Trash2 className="w-4 h-4 mr-2" />
                           Delete
                         </DropdownMenuItem>
@@ -307,7 +336,11 @@ const MySurveys = () => {
                       <Share2 className="w-4 h-4 mr-1" />
                       Share
                     </Button>
-                    <Button size="sm" className="flex-1 bg-gradient-primary hover:opacity-90">
+                    <Button
+                      size="sm"
+                      className="flex-1 bg-gradient-primary hover:opacity-90"
+                      onClick={() => navigate(`/results/${survey.id}`)}
+                    >
                       <BarChart3 className="w-4 h-4 mr-1" />
                       Results
                     </Button>
