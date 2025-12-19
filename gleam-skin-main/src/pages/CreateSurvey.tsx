@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { PlusCircle, Trash2, Sparkles, Loader2, Send } from "lucide-react";
+import { PlusCircle, Trash2, Sparkles, Loader2, Send, Layout } from "lucide-react";
 import { api } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -75,6 +75,20 @@ const CreateSurvey = () => {
         required: true,
       },
     ]);
+  };
+
+  const addSection = () => {
+    setQuestions([
+      ...questions,
+      {
+        id: `${Date.now()}`,
+        type: "section_header",
+        text: "New Section",
+        required: false,
+      },
+    ]);
+    setSelectedTemplate("sectional");
+    toast({ title: "Section Added", description: "Switched to Section by Section mode." });
   };
 
   const updateQuestion = (id: string, field: string, value: any) => {
@@ -305,11 +319,11 @@ const CreateSurvey = () => {
             </p>
           </div>
           <Button
-            onClick={() => setShowChatDialog(true)}
-            className="bg-gradient-primary hover:opacity-90"
+            onClick={() => navigate('/ai-assistant')}
+            className="bg-gradient-primary hover:opacity-90 shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all"
           >
             <Sparkles className="w-4 h-4 mr-2" />
-            Chat with AI
+            Chat with AI Assistant
           </Button>
         </div>
 
@@ -348,6 +362,10 @@ const CreateSurvey = () => {
               <Button type="button" onClick={addQuestion} size="sm">
                 <PlusCircle className="w-4 h-4 mr-2" />
                 Add Question
+              </Button>
+              <Button type="button" onClick={addSection} size="sm" variant="secondary">
+                <Layout className="w-4 h-4 mr-2" />
+                Add Section
               </Button>
               <Button
                 type="button"
@@ -453,79 +471,6 @@ const CreateSurvey = () => {
           </div>
         </div>
       </div>
-
-      {/* AI Chat Dialog */}
-      <Dialog open={showChatDialog} onOpenChange={setShowChatDialog}>
-        <DialogContent className="sm:max-w-2xl max-h-[80vh] flex flex-col">
-          <DialogHeader>
-            <DialogTitle>Chat with AI Assistant (Llama 3.1)</DialogTitle>
-            <DialogDescription>
-              Describe your survey needs in conversation. Say "done" when ready to generate questions.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 flex-1 flex flex-col">
-            {/* Chat Messages */}
-            <div className="flex-1 overflow-y-auto border rounded-lg p-4 space-y-4 min-h-[300px] max-h-[500px]">
-              {messages.map((message, index) => (
-                <div
-                  key={index}
-                  className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-                >
-                  <div
-                    className={`max-w-[80%] rounded-2xl px-4 py-3 ${message.role === "user"
-                      ? "bg-gradient-primary text-white"
-                      : "bg-muted text-foreground border"
-                      }`}
-                  >
-                    {message.role === "assistant" && (
-                      <Sparkles className="w-4 h-4 inline mr-2 text-primary" />
-                    )}
-                    <span className="text-sm whitespace-pre-wrap">{message.content}</span>
-                  </div>
-                </div>
-              ))}
-              {(isChatting || isGenerating) && (
-                <div className="flex justify-start">
-                  <div className="bg-muted border rounded-2xl px-4 py-3">
-                    <Loader2 className="w-4 h-4 animate-spin inline mr-2" />
-                    <span className="text-sm">{isGenerating ? "Generating survey..." : "Thinking..."}</span>
-                  </div>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-
-            {/* Input Area */}
-            <div className="flex gap-2">
-              <Textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSendMessage();
-                  }
-                }}
-                placeholder="Type your message... (say 'done' to generate survey)"
-                disabled={isChatting || isGenerating}
-                className="flex-1 min-h-[60px] resize-none"
-              />
-              <Button
-                onClick={handleSendMessage}
-                disabled={isChatting || isGenerating || !input.trim()}
-                className="bg-gradient-primary hover:opacity-90 self-end"
-              >
-                {isChatting || isGenerating ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Send className="w-4 h-4" />
-                )}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Template Selection Modal */}
       <TemplateSelectionModal

@@ -82,12 +82,12 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   return (
     <div className="min-h-screen bg-background flex">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex lg:w-64 flex-col border-r bg-card">
+      <aside className="hidden lg:flex lg:w-64 flex-col border-r bg-card print:hidden">
         <NavContent />
       </aside>
 
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-card border-b">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-card border-b print:hidden">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-2">
             <img src="/survonica-logo.png" alt="Survonica" className="h-12 w-auto object-contain" />
@@ -108,7 +108,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 lg:pt-0 pt-16">
+      <main className="flex-1 lg:pt-0 pt-16 print:pt-0">
         {children}
       </main>
     </div>

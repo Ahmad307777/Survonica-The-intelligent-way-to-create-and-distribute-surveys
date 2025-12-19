@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -77,12 +77,45 @@ export default function SurveyEditor() {
     logoUrl: "" as string // Added logoUrl
   });
 
+  const addSection = () => {
+    setQuestions([
+      ...questions,
+      {
+        text: "New Section",
+        type: "section_header",
+        required: false
+      }
+    ]);
+    toast({ title: "Section Added", description: "New section break created." });
+  };
+
   const [isPreviewMode, setIsPreviewMode] = useState(showPreview || false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [activeTab, setActiveTab] = useState("editor");
   const [generatingOptionsFor, setGeneratingOptionsFor] = useState<number | null>(null); // Track specific question generating
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0); // For Page-by-Page template
+  const [currentSectionIndex, setCurrentSectionIndex] = useState(0); // For Sectional template
   const [isGeneratingImage, setIsGeneratingImage] = useState(false); // Track image generation
+
+  const previewSections = useMemo(() => {
+    const sections: Array<{ title: string, questions: any[] }> = [];
+    let currentQ: any[] = [];
+    let currentT = "Start";
+
+    questions.forEach(q => {
+      if (q.type === 'section_header') {
+        if (currentQ.length > 0) sections.push({ title: currentT, questions: currentQ });
+        currentQ = [];
+        currentT = q.text || "Section";
+      } else {
+        currentQ.push(q);
+      }
+    });
+    if (currentQ.length > 0) sections.push({ title: currentT, questions: currentQ });
+    if (sections.length === 0) sections.push({ title: "Start", questions: [] });
+
+    return sections;
+  }, [questions]);
 
   const handleGenerateImage = async (type: 'logo' | 'question', index?: number) => {
     const prompt = type === 'logo' ? `Logo for ${title}, minimalistic, vector art, white background` :
@@ -319,6 +352,7 @@ export default function SurveyEditor() {
                     <SelectItem value="single-column">Standard Scroll</SelectItem>
                     <SelectItem value="page-by-page">Page-by-Page</SelectItem>
                     <SelectItem value="minimalist">Minimalist</SelectItem>
+                    <SelectItem value="sectional">Section by Section</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -442,55 +476,132 @@ export default function SurveyEditor() {
                               )}
                             </div>
                           </div>
-                        ) : (
-                          // STANDARD / MINIMALIST LIST VIEW
-                          <>
-                            {questions.map((q, i) => (
-                              <div key={i} className={`space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700 ${template === 'minimalist' ? 'border-b border-gray-100 pb-12 last:border-0' : ''}`} style={{ animationDelay: `${i * 100}ms` }}>
-                                <Label className={`font-medium block text-gray-800 ${template === 'minimalist' ? 'text-2xl mb-4' : 'text-xl'}`}>
-                                  <span className="text-gray-400 mr-2">{i + 1}.</span>
-                                  {q.text}
-                                  {q.required && <span className="text-red-500 ml-1">*</span>}
-                                </Label>
+                        ) : template === 'sectional' ? (
+                          // SECTIONAL VIEW
+                          <div className="min-h-[400px] flex flex-col justify-between">
+                            <div className="space-y-8 animate-in fade-in slide-in-from-right-8 duration-500" key={currentSectionIndex}>
+                              <div className="pb-4 border-b border-gray-100">
+                                <h2 className="text-2xl font-bold text-gray-800">{previewSections[currentSectionIndex]?.title}</h2>
+                                <div className="text-xs text-gray-400 uppercase tracking-widest mt-1">Section {currentSectionIndex + 1} of {previewSections.length}</div>
+                              </div>
 
-                                <div className="pl-6">
-                                  {q.type === 'text' && (
-                                    <Input className={`bg-transparent border-0 border-b-2 border-gray-200 focus-visible:ring-0 px-0 py-2 focus-visible:border-gray-800 rounded-none transition-colors ${template === 'minimalist' ? 'text-xl' : 'text-lg'}`} placeholder="Type your answer here..." />
-                                  )}
-
+                              {previewSections[currentSectionIndex]?.questions.map((q, i) => (
+                                <div key={i} className="space-y-3">
+                                  <Label className="text-lg font-medium text-gray-800 block">
+                                    {q.text}
+                                    {q.required && <span className="text-red-500 ml-1">*</span>}
+                                  </Label>
+                                  {/* Simplified inputs for preview */}
+                                  {q.type === 'text' && <Input className="bg-gray-50/50" placeholder="Your answer..." />}
                                   {(q.type === 'multiple_choice' || q.type === 'checkboxes') && (
-                                    <div className="space-y-3">
-                                      {(q.options || ['Option 1', 'Option 2']).map((opt, idx) => (
-                                        <div key={idx} className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${template === 'minimalist' ? 'hover:bg-gray-50' : 'hover:bg-gray-50 border border-transparent hover:border-gray-200'}`}>
-                                          {q.type === 'multiple_choice' ? (
-                                            <div className="w-5 h-5 rounded-full border-2 border-gray-300" />
-                                          ) : (
-                                            <div className="w-5 h-5 rounded border-2 border-gray-300" />
-                                          )}
-                                          <span className={`text-gray-700 ${template === 'minimalist' ? 'text-lg' : 'text-lg'}`}>{opt}</span>
+                                    <div className="space-y-2">
+                                      {(q.options || ['Option 1', 'Option 2']).map((opt: string, idx: number) => (
+                                        <div key={idx} className="flex items-center gap-2 text-gray-600">
+                                          <div className="w-4 h-4 border rounded-full border-gray-300" />
+                                          <span>{opt}</span>
                                         </div>
                                       ))}
                                     </div>
                                   )}
-
-                                  {q.type === 'rating' && (
-                                    <div className="flex gap-2">
-                                      {q.ratingType === 'star' ? (
-                                        [1, 2, 3, 4, 5].map(i => (
-                                          <button key={i} className="group/star">
-                                            <Star className="w-8 h-8 text-gray-300 hover:text-yellow-400 fill-transparent hover:fill-yellow-400 transition-all" />
-                                          </button>
-                                        ))
-                                      ) : (
-                                        [1, 2, 3, 4, 5].map(i => (
-                                          <div key={i} className="w-10 h-10 rounded-full border flex items-center justify-center text-gray-400 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-colors cursor-pointer">{i}</div>
-                                        ))
-                                      )}
-                                    </div>
-                                  )}
                                 </div>
-                              </div>
-                            ))}
+                              ))}
+                            </div>
+
+                            <div className="flex items-center justify-between mt-12 pt-8 border-t border-gray-100">
+                              <Button
+                                variant="ghost"
+                                onClick={() => setCurrentSectionIndex(Math.max(0, currentSectionIndex - 1))}
+                                disabled={currentSectionIndex === 0}
+                                className="text-gray-400 hover:text-gray-600"
+                              >
+                                Previous Section
+                              </Button>
+
+                              {currentSectionIndex < previewSections.length - 1 ? (
+                                <Button
+                                  onClick={() => setCurrentSectionIndex(Math.min(previewSections.length - 1, currentSectionIndex + 1))}
+                                  className="px-6 bg-gray-900 text-white hover:bg-gray-800"
+                                >
+                                  Next Section
+                                </Button>
+                              ) : (
+                                <Button
+                                  style={{ backgroundColor: design.primaryColor }}
+                                  className="px-8 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all"
+                                >
+                                  Submit
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          // STANDARD / MINIMALIST LIST VIEW
+                          <>
+                            {questions.map((q, i) => {
+                              if (q.type === 'section_header') {
+                                return (
+                                  <div key={i} className={`pt-8 pb-4 border-b border-gray-200 mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700`} style={{ animationDelay: `${i * 100}ms` }}>
+                                    <h2 className="text-2xl font-bold" style={{ color: design.primaryColor }}>
+                                      {q.text}
+                                    </h2>
+                                  </div>
+                                );
+                              }
+
+                              return (
+                                <div key={i} className={`space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700 ${template === 'minimalist' ? 'border-b border-gray-100 pb-12 last:border-0' : ''}`} style={{ animationDelay: `${i * 100}ms` }}>
+                                  <Label className={`font-medium block text-gray-800 ${template === 'minimalist' ? 'text-2xl mb-4' : 'text-xl'}`}>
+                                    <span className="text-gray-400 mr-2">{i + 1}.</span>
+                                    {q.text}
+                                    {q.required && <span className="text-red-500 ml-1">*</span>}
+                                  </Label>
+
+                                  <div className="pl-6">
+                                    {q.type === 'text' && (
+                                      <Input className={`bg-transparent border-0 border-b-2 border-gray-200 focus-visible:ring-0 px-0 py-2 focus-visible:border-gray-800 rounded-none transition-colors ${template === 'minimalist' ? 'text-xl' : 'text-lg'}`} placeholder="Type your answer here..." />
+                                    )}
+
+                                    {(q.type === 'multiple_choice' || q.type === 'checkboxes') && (
+                                      <div className="space-y-3">
+                                        {(q.options || ['Option 1', 'Option 2']).map((opt, idx) => (
+                                          <div key={idx} className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${template === 'minimalist' ? 'hover:bg-gray-50' : 'hover:bg-gray-50 border border-transparent hover:border-gray-200'}`}>
+                                            {q.type === 'multiple_choice' ? (
+                                              <div className="w-5 h-5 rounded-full border-2 border-gray-300" />
+                                            ) : (
+                                              <div className="w-5 h-5 rounded border-2 border-gray-300" />
+                                            )}
+                                            <span className={`text-gray-700 ${template === 'minimalist' ? 'text-lg' : 'text-lg'}`}>{opt}</span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+
+                                    {q.type === 'rating' && (
+                                      <div className="flex gap-2">
+                                        {q.ratingType === 'star' ? (
+                                          [1, 2, 3, 4, 5].map(i => (
+                                            <button key={i} className="group/star">
+                                              <Star className="w-8 h-8 text-gray-300 hover:text-yellow-400 fill-transparent hover:fill-yellow-400 transition-all" />
+                                            </button>
+                                          ))
+                                        ) : (
+                                          [1, 2, 3, 4, 5].map(i => (
+                                            <div key={i} className="w-10 h-10 rounded-full border flex items-center justify-center text-gray-400 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-colors cursor-pointer">{i}</div>
+                                          ))
+                                        )}
+                                      </div>
+                                    )}
+
+                                    {q.type === 'yes_no' && (
+                                      <div className="flex gap-4">
+                                        <Button variant="outline" className="w-24">Yes</Button>
+                                        <Button variant="outline" className="w-24">No</Button>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
 
                             <div className="pt-10">
                               <Button
@@ -585,12 +696,14 @@ export default function SurveyEditor() {
                       <div className="flex-1 space-y-4">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
-                            <Label className="text-xs text-muted-foreground">Question {index + 1}</Label>
+                            <Label className={`text-xs ${q.type === 'section_header' ? 'text-primary font-bold' : 'text-muted-foreground'}`}>
+                              {q.type === 'section_header' ? `Section ${index + 1} Title` : `Question ${index + 1}`}
+                            </Label>
                             <Input
-                              value={q.text}
+                              value={q.text || ""}
                               onChange={(e) => updateQuestion(index, 'text', e.target.value)}
-                              className="mt-2 font-medium"
-                              placeholder="Enter question text..."
+                              className={`mt-2 font-medium ${q.type === 'section_header' ? 'text-xl border-primary/50 bg-primary/5' : ''}`}
+                              placeholder={q.type === 'section_header' ? "Enter section title (e.g. 'Demographics')..." : "Enter question text..."}
                             />
                           </div>
                           <Button
@@ -610,11 +723,12 @@ export default function SurveyEditor() {
                               <Select value={q.type} onValueChange={(value) => updateQuestion(index, 'type', value)}>
                                 <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="text">Text</SelectItem>
+                                  <SelectItem value="text">Text Answer</SelectItem>
                                   <SelectItem value="multiple_choice">Multiple Choice</SelectItem>
                                   <SelectItem value="rating">Rating Scale</SelectItem>
-                                  <SelectItem value="yes_no">Yes/No</SelectItem>
+                                  <SelectItem value="yes_no">Yes / No</SelectItem>
                                   <SelectItem value="checkboxes">Checkboxes</SelectItem>
+                                  <SelectItem value="section_header" className="font-semibold text-primary">Section Break / Header</SelectItem>
                                 </SelectContent>
                               </Select>
                             </div>
@@ -641,10 +755,12 @@ export default function SurveyEditor() {
                             )}
                           </div>
                           <div className="flex items-end mb-2">
-                            <div className="flex items-center gap-2">
-                              <Checkbox checked={q.required} onCheckedChange={(checked) => updateQuestion(index, 'required', checked)} />
-                              <Label className="text-sm">Required</Label>
-                            </div>
+                            {q.type !== 'section_header' && (
+                              <div className="flex items-center gap-2">
+                                <Checkbox checked={q.required} onCheckedChange={(checked) => updateQuestion(index, 'required', checked as boolean)} />
+                                <Label className="text-sm">Required</Label>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>

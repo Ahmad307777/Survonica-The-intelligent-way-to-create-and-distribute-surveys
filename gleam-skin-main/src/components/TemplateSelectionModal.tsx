@@ -27,6 +27,12 @@ const templates: TemplateOption[] = [
         name: "Minimalist Focus",
         description: "Clean, distraction-free",
         preview: "linear-gradient(to bottom, #f8fafc, #f8fafc)"
+    },
+    {
+        id: "sectional",
+        name: "Section by Section",
+        description: "Grouped pages (Multi-Page)",
+        preview: "linear-gradient(to bottom, #dbeafe, #eff6ff)"
     }
 ];
 

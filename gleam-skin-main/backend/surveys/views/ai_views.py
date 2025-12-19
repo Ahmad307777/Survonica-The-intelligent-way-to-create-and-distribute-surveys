@@ -125,3 +125,61 @@ def generate_image_view(request):
         return Response(result)
     except Exception as e:
         return Response({'detail': str(e), 'error': True}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+@authentication_classes([])
+def analyze_survey_view(request):
+    """
+    Analyze survey results
+    Expects: { "surveyId": "..." }
+    Returns: JSON analysis results
+    """
+    from ..ai_helper import analyze_survey_results
+    from ..models import Survey, SurveyResponse
+    
+    survey_id = request.data.get('surveyId')
+    api_key = request.data.get('api_key') # Optional override
+    
+    if not survey_id:
+        return Response({'detail': 'Survey ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        # Fetch Survey
+        try:
+            survey = Survey.objects.get(id=survey_id)
+            # MongoEngine compatible fetch:
+            # survey = Survey.objects.get(id=survey_id) 
+            # Note: models.py uses mongoengine 'Document', so objects.get works.
+        except Exception:
+            # Try to fetch by checking if it's a valid objectid string if needed, 
+            # or usually mongoengine handles it. 
+            return Response({'detail': 'Survey not found'}, status=status.HTTP_404_NOT_FOUND)
+            
+        # Fetch Responses
+        responses = SurveyResponse.objects.filter(survey=survey)
+        
+        # Convert to list of dicts/objects that helper expects
+        # The helper expects lists of dict-like objects or we can pass doc objects if helper handles them.
+        # Check helper: 
+        # q.get('text') -> implies dict interface.
+        # r.get('responses') -> implies dict interface.
+        # MongoEngine objects allow .to_mongo() but simpler to just build dicts.
+        
+        survey_title = survey.title
+        questions_data = survey.questions # ListField(DictField()) -> already list of dicts
+        
+        responses_data = []
+        for r in responses:
+            responses_data.append({
+                'responses': r.responses, # DictField -> dict
+                'completed_at': r.completed_at
+            })
+            
+        result = analyze_survey_results(survey_title, questions_data, responses_data, api_key)
+        return Response(result)
+        
+    except Exception as e:
+        print(f"Error analyzing survey: {e}")
+        return Response({'detail': str(e), 'error': True}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

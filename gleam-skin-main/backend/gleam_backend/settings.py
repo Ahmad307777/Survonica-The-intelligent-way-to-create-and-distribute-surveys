@@ -116,9 +116,12 @@ DATABASES = {
 
 # MongoDB Configuration
 import mongoengine
+import certifi
+
 mongoengine.connect(
     host=os.getenv('MONGO_URI'),
-    db='gleam_surveys'
+    db='gleam_surveys',
+    tlsCAFile=certifi.where()
 )
 try:
     print(f" !!! ACTIVE DATABASE: {mongoengine.connection.get_db().name} !!!")

@@ -1,13 +1,13 @@
 
 import os
 
-content = """EMAIL_HOST_USER=s3327066437@gmail.com
-EMAIL_HOST_PASSWORD=kxmimmqhzckxcrec
+content = """EMAIL_HOST_USER=your_email@gmail.com
+EMAIL_HOST_PASSWORD=your_app_password
 EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
 EMAIL_USE_TLS=True
-MONGO_URI=mongodb+srv://bscs22f37_db_user:wWJj2RlIisPUTgLO@survonica.adbiwjm.mongodb.net/gleam_surveys?appName=Survonica
-HUGGINGFACE_API_KEY=YOUR_HUGGINGFACE_API_KEY
+MONGO_URI=mongodb+srv://your_user:your_password@your_cluster.mongodb.net/your_db?appName=Survonica
+HUGGINGFACE_API_KEY=your_hf_key_here
 """
 
 file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env')

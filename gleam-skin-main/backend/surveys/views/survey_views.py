@@ -168,7 +168,15 @@ class SurveyResponseViewSet(MongoEngineViewSet):
     permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
-        return SurveyResponse.objects.all()
+        queryset = SurveyResponse.objects.all()
+        survey_id = self.request.query_params.get('survey')
+        if survey_id:
+            try:
+                survey = Survey.objects.get(id=survey_id)
+                queryset = queryset.filter(survey=survey)
+            except DoesNotExist:
+                return SurveyResponse.objects.none()
+        return queryset
 
 class RespondentQualificationViewSet(MongoEngineViewSet):
     """Respondent Qualification CRUD operations"""

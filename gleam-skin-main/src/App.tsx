@@ -16,6 +16,7 @@ import NotFound from "./pages/NotFound";
 import QualificationTest from "./pages/QualificationTest";
 import QualityControl from "./pages/QualityControl";
 import CreateQualificationTest from "./pages/CreateQualificationTest";
+import AiSurveyAssistant from "./pages/AiSurveyAssistant";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ const App = () => (
           <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/create" element={<CreateSurvey />} />
+          <Route path="/ai-assistant" element={<AiSurveyAssistant />} />
           <Route path="/surveys" element={<MySurveys />} />
           <Route path="/editor/:id" element={<SurveyEditor />} />
           <Route path="/survey-editor" element={<SurveyEditor />} />

@@ -16,7 +16,8 @@ import {
   Copy,
   X,
   Loader2,
-  Sparkles
+  Sparkles,
+  Printer
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -313,6 +314,10 @@ const MySurveys = () => {
                         <DropdownMenuItem onClick={() => navigate(`/results/${survey.id}`)}>
                           <BarChart3 className="w-4 h-4 mr-2" />
                           View Results
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => window.open(`/survey/${survey.id}?print=true`, '_blank')}>
+                          <Printer className="w-4 h-4 mr-2" />
+                          Print Blank PDF
                         </DropdownMenuItem>
                         <DropdownMenuItem className="text-destructive" onClick={() => handleDelete(survey.id)}>
                           <Trash2 className="w-4 h-4 mr-2" />
